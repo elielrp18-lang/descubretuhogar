@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartas al Azar - Objetos de la Casa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+            text-align: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .header h1 {
+            color: #f5576c;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 900px;
+            min-height: 650px;
+            position: relative;
+        }
+
+        .card-stack {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 500px;
+            margin: 2rem auto;
+            perspective: 1000px;
+        }
+
+        .flashcard {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .emoji-large {
+            font-size: 12rem;
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .card-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .card-description {
+            font-size: 1.3rem;
+            text-align: center;
+            opacity: 0.95;
+            max-width: 400px;
+        }
+
+        .flip-hint {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1.25rem 2.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #f5576c;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e04358;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(245, 87, 108, 0.3);
+        }
+
+        .btn-secondary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5568d3;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: #51CF66;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #40b854;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(81, 207, 102, 0.3);
+        }
+
+        .progress-indicator {
+            text-align: center;
+            font-size: 1.3rem;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-difficulty {
+            padding: 0.75rem 1.5rem;
+            border: 3px solid #f5576c;
+            background: white;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            color: #2C3E50;
+            transition: all 0.3s;
+        }
+
+        .btn-difficulty.active {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            border-color: #f5576c;
+        }
+
+        .btn-difficulty:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 550px;
+            width: 90%;
+            animation: modalPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes modalPop {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            font-size: 2.5rem;
+            color: #51CF66;
+            margin-bottom: 1rem;
+        }
+
+        .celebration {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .final-stats {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 1.2rem;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            color: #2C3E50;
+            font-weight: 700;
+        }
+
+        /* Animación de entrada de carta */
+        .flashcard.enter {
+            animation: cardEnter 0.6s;
+        }
+
+        @keyframes cardEnter {
+            0% {
+                transform: translateX(100%) rotate(20deg);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0) rotate(0);
+                opacity: 1;
+            }
+        }
+
+        /* Animación de salida de carta */
+        .flashcard.exit-left {
+            animation: cardExitLeft 0.6s forwards;
+        }
+
+        @keyframes cardExitLeft {
+            0% {
+                transform: translateX(0) rotate(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-150%) rotate(-30deg);
+                opacity: 0;
+            }
+        }
+
+        .flashcard.exit-right {
+            animation: cardExitRight 0.6s forwards;
+        }
+
+        @keyframes cardExitRight {
+            0% {
+                transform: translateX(0) rotate(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(150%) rotate(30deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .card-stack {
+                height: 450px;
+            }
+
+            .emoji-large {
+                font-size: 8rem;
+            }
+
+            .card-title {
+                font-size: 2.2rem;
+            }
+
+            .card-description {
+                font-size: 1.1rem;
+            }
+
+            .game-container {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card-stack {
+                height: 400px;
+            }
+
+            .emoji-large {
+                font-size: 6rem;
+                margin-bottom: 1rem;
+            }
+
+            .card-title {
+                font-size: 1.8rem;
+            }
+
+            .card-description {
+                font-size: 1rem;
+            }
+
+            .btn {
+                padding: 1rem 1.5rem;
+                font-size: 0.95rem;
+            }
+
+            .game-container {
+                padding: 1rem;
+                min-height: 550px;
+            }
+        }
+        .btn-home {
+    position: absolute;
+    top: 1.5rem;
+    left: 2rem;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    transition: all 0.3s;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.btn-home:hover {
+    background: #667eea;
+    color: white;
+    transform: translateX(-5px);
+}
+
+/* Ajuste para el header */
+.header {
+    position: relative;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .btn-home {
+        position: static;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="btn-home">← Volver a Inicio</a>
+        <h1>🎴 Cartas al Azar </h1>
+        <p>¡Descubre objetos volteando las cartas!</p>
+        <div class="score-board">
+            <div class="score-item">
+                🎯 Cartas vistas: <span id="cardsViewed">0</span>
+            </div>
+            <div class="score-item">
+                💝 Favoritas: <span id="favorites">0</span>
+            </div>
+            <div class="score-item">
+                ⏱️ Tiempo: <span id="timer">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="difficulty-selector">
+            <button class="btn-difficulty active" onclick="changeDifficulty(10)">🎯 10 Cartas</button>
+            <button class="btn-difficulty" onclick="changeDifficulty(15)">💪 15 Cartas</button>
+            <button class="btn-difficulty" onclick="changeDifficulty(20)">🔥 20 Cartas</button>
+        </div>
+
+        <div class="progress-indicator" id="progressIndicator">
+            Carta 1 de 10
+        </div>
+
+        <div class="card-stack" id="cardStack">
+            <div class="flashcard enter" id="currentCard" onclick="flipCard()">
+                <div class="card-face card-front">
+                    <div class="emoji-large">❓</div>
+                    <div class="card-title">TOCA PARA VER</div>
+                    <div class="flip-hint">👆 Haz clic en la carta</div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="emoji-large" id="cardEmoji">🏠</div>
+                    <div class="card-title" id="cardTitle">OBJETO</div>
+                    <div class="card-description" id="cardDescription">Descripción del objeto</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-secondary" onclick="previousCard()">
+                ← Anterior
+            </button>
+            <button class="btn btn-success" onclick="addToFavorites()">
+                💝 Favorita
+            </button>
+            <button class="btn btn-primary" onclick="nextCard()">
+                Siguiente →
+            </button>
+        </div>
+    </div>
+
+    <div class="modal" id="completionModal">
+        <div class="modal-content">
+            <div class="celebration">🎉🎊✨</div>
+            <h2>¡Completaste todas las cartas!</h2>
+            <p style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;">
+                ¡Has visto todos los objetos de la casa!
+            </p>
+            
+            <div class="final-stats">
+                <div class="stat-item">
+                    <span class="stat-label">🎴 Cartas vistas:</span>
+                    <span class="stat-value" id="finalCardsViewed">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">💝 Cartas favoritas:</span>
+                    <span class="stat-value" id="finalFavorites">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">⏱️ Tiempo total:</span>
+                    <span class="stat-value" id="finalTime">0:00</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="resetGame()">🔄 Ver de Nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base de datos de objetos
+        const HOUSE_OBJECTS = [
+            { emoji: '🛋️', name: 'SOFÁ', description: 'Un mueble cómodo para sentarse en la sala' },
+            { emoji: '🪑', name: 'SILLA', description: 'Mueble para sentarse con respaldo' },
+            { emoji: '🛏️', name: 'CAMA', description: 'Donde dormimos y descansamos por la noche' },
+            { emoji: '🚪', name: 'PUERTA', description: 'Entrada y salida de las habitaciones' },
+            { emoji: '🪟', name: 'VENTANA', description: 'Deja entrar luz y aire fresco' },
+            { emoji: '💡', name: 'LÁMPARA', description: 'Nos da luz cuando está oscuro' },
+            { emoji: '🚿', name: 'DUCHA', description: 'Para bañarnos y mantenernos limpios' },
+            { emoji: '🚽', name: 'INODORO', description: 'Lo usamos en el baño todos los días' },
+            { emoji: '📺', name: 'TELEVISIÓN', description: 'Para ver programas y películas' },
+            { emoji: '🖼️', name: 'CUADRO', description: 'Obra de arte que decora las paredes' },
+            { emoji: '🕰️', name: 'RELOJ', description: 'Nos dice qué hora es' },
+            { emoji: '🪴', name: 'PLANTA', description: 'Decora la casa y da vida al ambiente' },
+            { emoji: '🧹', name: 'ESCOBA', description: 'Para barrer y limpiar el piso' },
+            { emoji: '🗑️', name: 'BASURERO', description: 'Donde tiramos la basura' },
+            { emoji: '☕', name: 'TAZA', description: 'Para tomar café, té o chocolate' },
+            { emoji: '🍽️', name: 'PLATO', description: 'Donde servimos la comida' },
+            { emoji: '🔑', name: 'LLAVE', description: 'Abre y cierra puertas y cerraduras' },
+            { emoji: '🧊', name: 'REFRIGERADOR', description: 'Mantiene los alimentos frescos' },
+            { emoji: '🪞', name: 'ESPEJO', description: 'Nos refleja y nos permite vernos' },
+            { emoji: '🛁', name: 'BAÑERA', description: 'Para tomar un baño relajante' },
+            { emoji: '🧴', name: 'JABÓN', description: 'Para lavarnos y mantenernos limpios' },
+            { emoji: '🧺', name: 'CANASTA', description: 'Para guardar ropa o juguetes' },
+            { emoji: '🕯️', name: 'VELA', description: 'Da luz y aroma agradable' },
+            { emoji: '📚', name: 'LIBRERO', description: 'Donde guardamos nuestros libros' }
+        ];
+
+        // Variables del juego
+        let totalCards = 10;
+        let currentIndex = 0;
+        let cards = [];
+        let isFlipped = false;
+        let cardsViewed = 0;
+        let favoriteCards = new Set();
+        let startTime = Date.now();
+        let timerInterval;
+
+        // Inicializar juego
+        function initGame() {
+            currentIndex = 0;
+            cardsViewed = 0;
+            favoriteCards = new Set();
+            isFlipped = false;
+            startTime = Date.now();
+            
+            // Seleccionar cartas aleatorias
+            cards = shuffleArray([...HOUSE_OBJECTS]).slice(0, totalCards);
+            
+            updateStats();
+            showCard();
+            startTimer();
+        }
+
+        // Mostrar carta actual
+        function showCard() {
+            if (currentIndex >= totalCards) {
+                showCompletionModal();
+                return;
+            }
+
+            const card = cards[currentIndex];
+            const cardElement = document.getElementById('currentCard');
+            
+            // Actualizar progreso
+            document.getElementById('progressIndicator').textContent = 
+                `Carta ${currentIndex + 1} de ${totalCards}`;
+            
+            // Actualizar contenido de la carta
+            document.getElementById('cardEmoji').textContent = card.emoji;
+            document.getElementById('cardTitle').textContent = card.name;
+            document.getElementById('cardDescription').textContent = card.description;
+            
+            // Resetear flip
+            if (isFlipped) {
+                cardElement.classList.remove('flipped');
+                isFlipped = false;
+            }
+            
+            // Animación de entrada
+            cardElement.classList.remove('exit-left', 'exit-right', 'enter');
+            setTimeout(() => {
+                cardElement.classList.add('enter');
+            }, 50);
+        }
+
+        // Voltear carta
+        function flipCard() {
+            const cardElement = document.getElementById('currentCard');
+            isFlipped = !isFlipped;
+            
+            if (isFlipped) {
+                cardElement.classList.add('flipped');
+                if (currentIndex === cardsViewed) {
+                    cardsViewed++;
+                    updateStats();
+                }
+            } else {
+                cardElement.classList.remove('flipped');
+            }
+        }
+
+        // Siguiente carta
+        function nextCard() {
+            if (currentIndex < totalCards - 1) {
+                const cardElement = document.getElementById('currentCard');
+                cardElement.classList.add('exit-right');
+                
+                setTimeout(() => {
+                    currentIndex++;
+                    showCard();
+                }, 600);
+            } else {
+                showCompletionModal();
+            }
+        }
+
+        // Carta anterior
+        function previousCard() {
+            if (currentIndex > 0) {
+                const cardElement = document.getElementById('currentCard');
+                cardElement.classList.add('exit-left');
+                
+                setTimeout(() => {
+                    currentIndex--;
+                    showCard();
+                }, 600);
+            }
+        }
+
+        // Agregar a favoritos
+        function addToFavorites() {
+            const currentCard = cards[currentIndex];
+            
+            if (favoriteCards.has(currentCard.name)) {
+                favoriteCards.delete(currentCard.name);
+                showNotification('❌ Eliminada de favoritas');
+            } else {
+                favoriteCards.add(currentCard.name);
+                showNotification('💝 ¡Agregada a favoritas!');
+            }
+            
+            updateStats();
+        }
+
+        // Mostrar notificación
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                padding: 1rem 2rem;
+                border-radius: 15px;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+                font-weight: 600;
+                z-index: 2000;
+                animation: slideInRight 0.3s;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            document.getElementById('cardsViewed').textContent = cardsViewed;
+            document.getElementById('favorites').textContent = favoriteCards.size;
+        }
+
+        // Timer
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        // Mostrar modal de completado
+        function showCompletionModal() {
+            clearInterval(timerInterval);
+            
+            const timeText = document.getElementById('timer').textContent;
+            
+            document.getElementById('finalCardsViewed').textContent = cardsViewed;
+            document.getElementById('finalFavorites').textContent = favoriteCards.size;
+            document.getElementById('finalTime').textContent = timeText;
+            
+            document.getElementById('completionModal').classList.add('show');
+        }
+
+        // Cambiar dificultad
+        function changeDifficulty(numCards) {
+            totalCards = numCards;
+            
+            // Actualizar botones
+            document.querySelectorAll('.btn-difficulty').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            resetGame();
+        }
+
+        // Reiniciar juego
+        function resetGame() {
+            clearInterval(timerInterval);
+            document.getElementById('completionModal').classList.remove('show');
+            initGame();
+        }
+
+        // Mezclar array
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Agregar estilos para las animaciones
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Iniciar juego al cargar
+        initGame();
+    </script>
+</body>
+</html>

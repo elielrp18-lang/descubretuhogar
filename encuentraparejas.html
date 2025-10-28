@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory - Encuentra las Parejas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+            text-align: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .header h1 {
+            color: #FF6B6B;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: linear-gradient(135deg, #4ECDC4, #45b8af);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .instructions {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #666;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 2rem auto;
+            max-width: 600px;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: white;
+            border: 4px solid #4ECDC4;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            transform-style: preserve-3d;
+            min-height: 120px;
+        }
+
+        .memory-card:hover:not(.flipped):not(.matched) {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .memory-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .memory-card.matched {
+            border-color: #51CF66;
+            animation: matchAnimation 0.5s;
+        }
+
+        @keyframes matchAnimation {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backface-visibility: hidden;
+            border-radius: 11px;
+            font-size: 3.5rem;
+            font-weight: 700;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #4ECDC4, #45b8af);
+            color: white;
+        }
+
+        .card-back {
+            background: white;
+            transform: rotateY(180deg);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #FF6B6B;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ff5252;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-secondary {
+            background: #4ECDC4;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #45b8af;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(78, 205, 196, 0.3);
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn-difficulty {
+            padding: 0.75rem 1.5rem;
+            border: 3px solid #4ECDC4;
+            background: white;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            color: #2C3E50;
+            transition: all 0.3s;
+        }
+
+        .btn-difficulty.active {
+            background: #4ECDC4;
+            color: white;
+        }
+
+        .btn-difficulty:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: scale(0.8) translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            font-size: 2.5rem;
+            color: #51CF66;
+            margin-bottom: 1rem;
+        }
+
+        .confetti {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .final-stats {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 1.1rem;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            color: #2C3E50;
+            font-weight: 700;
+        }
+
+        .final-score-big {
+            background: linear-gradient(135deg, #FFE66D, #FF6B6B);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-top: 1rem;
+        }
+
+        .final-score-big .label {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .final-score-big .value {
+            color: white;
+            font-size: 3.5rem;
+            font-weight: 700;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .memory-grid {
+                gap: 0.75rem;
+            }
+
+            .card-face {
+                font-size: 2.5rem;
+            }
+
+            .game-container {
+                padding: 1rem;
+            }
+
+            .score-board {
+                gap: 0.75rem;
+            }
+
+            .score-item {
+                padding: 0.75rem 1rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .memory-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .card-face {
+                font-size: 2rem;
+            }
+
+            .memory-card {
+                min-height: 80px;
+            }
+
+            .btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .difficulty-buttons {
+                flex-direction: column;
+            }
+        }
+        .btn-home {
+    position: absolute;
+    top: 1.5rem;
+    left: 2rem;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    transition: all 0.3s;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.btn-home:hover {
+    background: #667eea;
+    color: white;
+    transform: translateX(-5px);
+}
+
+/* Ajuste para el header */
+.header {
+    position: relative;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .btn-home {
+        position: static;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="btn-home">← Volver a Inicio</a>
+        <h1>🎴Encuentra las Parejas</h1>
+        <p>¡Voltea las cartas y encuentra las parejas!</p>
+        <div class="score-board">
+            <div class="score-item">
+                🏆 Puntos: <span id="score">0</span>
+            </div>
+            <div class="score-item">
+                🎯 Parejas: <span id="pairsFound">0</span>/<span id="totalPairs">0</span>
+            </div>
+            <div class="score-item">
+                🔄 Intentos: <span id="attempts">0</span>
+            </div>
+            <div class="score-item">
+                ⏱️ Tiempo: <span id="timer">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="instructions">
+            💡 <strong>Instrucciones:</strong> Haz clic en dos cartas para voltearlas. Si son iguales, se quedan volteadas. ¡Encuentra todas las parejas!
+        </div>
+
+        <div class="difficulty-buttons">
+            <button class="btn-difficulty active" onclick="changeDifficulty('easy')">😊 Fácil (8 cartas)</button>
+            <button class="btn-difficulty" onclick="changeDifficulty('medium')">🤔 Medio (12 cartas)</button>
+            <button class="btn-difficulty" onclick="changeDifficulty('hard')">😤 Difícil (16 cartas)</button>
+        </div>
+        
+        <div class="memory-grid" id="memoryGrid"></div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="resetGame()">🎮 Nuevo Juego</button>
+        </div>
+    </div>
+
+    <div class="modal" id="winModal">
+        <div class="modal-content">
+            <div class="confetti">🎉🎊🎈✨</div>
+            <h2>¡INCREÍBLE!</h2>
+            <p style="font-size: 1.2rem; color: #666; margin-bottom: 1rem;">
+                ¡Has encontrado todas las parejas!
+            </p>
+            
+            <div class="final-stats">
+                <div class="stat-row">
+                    <span class="stat-label">⏱️ Tiempo:</span>
+                    <span class="stat-value" id="finalTime">0:00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">🔄 Intentos:</span>
+                    <span class="stat-value" id="finalAttempts">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">🎯 Precisión:</span>
+                    <span class="stat-value" id="accuracy">0%</span>
+                </div>
+            </div>
+
+            <div class="final-score-big">
+                <div class="label">Puntuación Final:</div>
+                <div class="value" id="finalScore">0</div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="resetGame()">🎮 Jugar de Nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Emojis de objetos de la casa
+        const HOUSE_OBJECTS = [
+            '🛋️', '🪑', '🛏️', '🚪', '🪟', '💡', '🚿', '🚽',
+            '🔑', '📺', '🖼️', '🕰️', '🪴', '🧺', '🧹', '🗑️',
+            '🍽️', '🥄', '🔪', '🍴', '🧊', '☕', '🫖', '🧴'
+        ];
+
+        // Variables del juego
+        let difficulty = 'easy';
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let totalPairs = 0;
+        let score = 0;
+        let attempts = 0;
+        let startTime = Date.now();
+        let timerInterval;
+        let canFlip = true;
+
+        // Configuración de dificultad
+        const DIFFICULTY_CONFIG = {
+            easy: { pairs: 4, columns: 4 },
+            medium: { pairs: 6, columns: 4 },
+            hard: { pairs: 8, columns: 4 }
+        };
+
+        // Inicializar juego
+        function initGame() {
+            const config = DIFFICULTY_CONFIG[difficulty];
+            totalPairs = config.pairs;
+            matchedPairs = 0;
+            score = 0;
+            attempts = 0;
+            flippedCards = [];
+            canFlip = true;
+            startTime = Date.now();
+            
+            // Crear cartas
+            const selectedEmojis = shuffleArray(HOUSE_OBJECTS).slice(0, totalPairs);
+            cards = [...selectedEmojis, ...selectedEmojis];
+            shuffleArray(cards);
+            
+            // Renderizar
+            renderGrid(config.columns);
+            updateStats();
+            startTimer();
+            
+            document.getElementById('totalPairs').textContent = totalPairs;
+        }
+
+        // Renderizar grid
+        function renderGrid(columns) {
+            const gridElement = document.getElementById('memoryGrid');
+            gridElement.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+            gridElement.innerHTML = '';
+            
+            cards.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.index = index;
+                card.dataset.emoji = emoji;
+                
+                card.innerHTML = `
+                    <div class="card-face card-front">❓</div>
+                    <div class="card-face card-back">${emoji}</div>
+                `;
+                
+                card.addEventListener('click', () => handleCardClick(card, index));
+                gridElement.appendChild(card);
+            });
+        }
+
+        // Manejar click en carta
+        function handleCardClick(card, index) {
+            if (!canFlip) return;
+            if (card.classList.contains('flipped')) return;
+            if (card.classList.contains('matched')) return;
+            if (flippedCards.length >= 2) return;
+            
+            // Voltear carta
+            card.classList.add('flipped');
+            flippedCards.push({ card, index, emoji: card.dataset.emoji });
+            
+            // Verificar si hay 2 cartas volteadas
+            if (flippedCards.length === 2) {
+                attempts++;
+                updateStats();
+                checkMatch();
+            }
+        }
+
+        // Verificar coincidencia
+        function checkMatch() {
+            canFlip = false;
+            const [card1, card2] = flippedCards;
+            
+            if (card1.emoji === card2.emoji) {
+                // ¡Coincidencia!
+                setTimeout(() => {
+                    card1.card.classList.add('matched');
+                    card2.card.classList.add('matched');
+                    matchedPairs++;
+                    score += 100;
+                    
+                    updateStats();
+                    flippedCards = [];
+                    canFlip = true;
+                    
+                    // Verificar si ganó
+                    if (matchedPairs === totalPairs) {
+                        setTimeout(showWinModal, 500);
+                    }
+                }, 500);
+            } else {
+                // No coinciden
+                setTimeout(() => {
+                    card1.card.classList.remove('flipped');
+                    card2.card.classList.remove('flipped');
+                    flippedCards = [];
+                    canFlip = true;
+                }, 1000);
+            }
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('pairsFound').textContent = matchedPairs;
+            document.getElementById('attempts').textContent = attempts;
+        }
+
+        // Timer
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        // Mostrar modal de victoria
+        function showWinModal() {
+            clearInterval(timerInterval);
+            
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            const perfectAttempts = totalPairs;
+            const accuracy = Math.round((perfectAttempts / attempts) * 100);
+            
+            // Bonus por precisión
+            if (accuracy >= 80) score += 200;
+            else if (accuracy >= 60) score += 100;
+            
+            document.getElementById('finalTime').textContent = timeStr;
+            document.getElementById('finalAttempts').textContent = attempts;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('finalScore').textContent = score;
+            
+            document.getElementById('winModal').classList.add('show');
+        }
+
+        // Cambiar dificultad
+        function changeDifficulty(level) {
+            difficulty = level;
+            
+            // Actualizar botones
+            document.querySelectorAll('.btn-difficulty').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            resetGame();
+        }
+
+        // Reiniciar juego
+        function resetGame() {
+            clearInterval(timerInterval);
+            document.getElementById('winModal').classList.remove('show');
+            initGame();
+        }
+
+        // Mezclar array
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Iniciar juego al cargar
+        initGame();
+    </script>
+</body>
+</html>

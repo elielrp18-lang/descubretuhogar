@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anagrama - Ordena las Letras</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+            text-align: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .header h1 {
+            color: #38f9d7;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 900px;
+            min-height: 650px;
+        }
+
+        .progress-bar-container {
+            background: #e0e0e0;
+            height: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #43e97b, #38f9d7);
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .question-number {
+            text-align: center;
+            color: #666;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .hint-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .emoji-hint {
+            font-size: 8rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .hint-text {
+            font-size: 1.1rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        .scrambled-word {
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .scrambled-title {
+            font-size: 1.3rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .letter-tiles {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .letter-tile {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            animation: popIn 0.5s ease-out backwards;
+            text-transform: uppercase;
+        }
+
+        .letter-tile:nth-child(1) { animation-delay: 0.1s; }
+        .letter-tile:nth-child(2) { animation-delay: 0.2s; }
+        .letter-tile:nth-child(3) { animation-delay: 0.3s; }
+        .letter-tile:nth-child(4) { animation-delay: 0.4s; }
+        .letter-tile:nth-child(5) { animation-delay: 0.5s; }
+        .letter-tile:nth-child(6) { animation-delay: 0.6s; }
+        .letter-tile:nth-child(7) { animation-delay: 0.7s; }
+        .letter-tile:nth-child(8) { animation-delay: 0.8s; }
+        .letter-tile:nth-child(9) { animation-delay: 0.9s; }
+        .letter-tile:nth-child(10) { animation-delay: 1s; }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0) rotate(180deg);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1) rotate(0);
+                opacity: 1;
+            }
+        }
+
+        .answer-section {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 1.5rem 2rem;
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            border: 4px solid #38f9d7;
+            border-radius: 20px;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #43e97b;
+            box-shadow: 0 0 0 4px rgba(67, 233, 123, 0.2);
+            transform: scale(1.02);
+        }
+
+        .answer-input.correct {
+            border-color: #51CF66;
+            background: rgba(81, 207, 102, 0.1);
+            animation: correctShake 0.5s;
+        }
+
+        .answer-input.wrong {
+            border-color: #FF6B6B;
+            background: rgba(255, 107, 107, 0.1);
+            animation: wrongShake 0.5s;
+        }
+
+        @keyframes correctShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px) scale(1.05); }
+            75% { transform: translateX(10px) scale(1.05); }
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-15px); }
+            50% { transform: translateX(15px); }
+            75% { transform: translateX(-15px); }
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 1.5rem 0;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .feedback.correct {
+            color: #51CF66;
+        }
+
+        .feedback.wrong {
+            color: #FF6B6B;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1.25rem 2.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(67, 233, 123, 0.3);
+        }
+
+        .btn-secondary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5568d3;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-hint {
+            background: #FFE66D;
+            color: #2C3E50;
+        }
+
+        .btn-hint:hover {
+            background: #FFD93D;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 230, 109, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .hint-used {
+            text-align: center;
+            color: #666;
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 550px;
+            width: 90%;
+            animation: modalZoom 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes modalZoom {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            font-size: 2.5rem;
+            color: #51CF66;
+            margin-bottom: 1rem;
+        }
+
+        .stars {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .final-stats {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 1.2rem;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            color: #2C3E50;
+            font-weight: 700;
+        }
+
+        .stat-value.excellent {
+            color: #51CF66;
+        }
+
+        .final-score-big {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-top: 1.5rem;
+        }
+
+        .final-score-big .label {
+            color: white;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .final-score-big .value {
+            color: white;
+            font-size: 4rem;
+            font-weight: 700;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .emoji-hint {
+                font-size: 6rem;
+            }
+
+            .letter-tile {
+                width: 55px;
+                height: 55px;
+                font-size: 2rem;
+            }
+
+            .answer-input {
+                font-size: 1.5rem;
+                padding: 1.25rem 1.5rem;
+            }
+
+            .game-container {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .emoji-hint {
+                font-size: 5rem;
+            }
+
+            .letter-tile {
+                width: 45px;
+                height: 45px;
+                font-size: 1.5rem;
+                gap: 0.5rem;
+            }
+
+            .answer-input {
+                font-size: 1.3rem;
+                padding: 1rem;
+            }
+
+            .btn {
+                padding: 1rem 1.5rem;
+                font-size: 0.95rem;
+            }
+
+            .game-container {
+                padding: 1rem;
+                min-height: 550px;
+            }
+        }
+        .btn-home {
+    position: absolute;
+    top: 1.5rem;
+    left: 2rem;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    transition: all 0.3s;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.btn-home:hover {
+    background: #667eea;
+    color: white;
+    transform: translateX(-5px);
+}
+
+/* Ajuste para el header */
+.header {
+    position: relative;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .btn-home {
+        position: static;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="btn-home">← Volver a Inicio</a>
+        <h1>🔀Ordena las Letras</h1>
+        <p>¡Descubre la palabra escondida!</p>
+        <div class="score-board">
+            <div class="score-item">
+                🏆 Puntos: <span id="score">0</span>
+            </div>
+            <div class="score-item">
+                ✅ Correctas: <span id="correct">0</span>
+            </div>
+            <div class="score-item">
+                💡 Pistas usadas: <span id="hintsUsed">0</span>
+            </div>
+            <div class="score-item">
+                ⏱️ Tiempo: <span id="timer">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="question-number" id="questionNumber">Palabra 1 de 10</div>
+
+        <div class="hint-section">
+            <div class="emoji-hint" id="emojiHint">🏠</div>
+            <div class="hint-text" id="hintText" style="display: none;"></div>
+        </div>
+
+        <div class="scrambled-word">
+            <div class="scrambled-title">Ordena estas letras:</div>
+            <div class="letter-tiles" id="letterTiles"></div>
+        </div>
+
+        <div class="answer-section">
+            <div class="input-container">
+                <input 
+                    type="text" 
+                    class="answer-input" 
+                    id="answerInput" 
+                    placeholder="ESCRIBE AQUÍ"
+                    maxlength="20"
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+
+            <div class="controls">
+                <button class="btn btn-hint" id="hintBtn" onclick="showHint()">
+                    💡 Pista
+                </button>
+                <button class="btn btn-secondary" onclick="shuffleLetters()">
+                    🔄 Revolver
+                </button>
+                <button class="btn btn-primary" onclick="checkAnswer()">
+                    ✓ Verificar
+                </button>
+            </div>
+
+            <div class="hint-used" id="hintUsedMsg"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="resultsModal">
+        <div class="modal-content">
+            <div class="stars">⭐⭐⭐</div>
+            <h2 id="resultTitle">¡Completado!</h2>
+            <p style="font-size: 1.2rem; color: #666; margin-bottom: 2rem;" id="performanceMsg">
+                ¡Has completado todos los anagramas!
+            </p>
+            
+            <div class="final-stats">
+                <div class="stat-row">
+                    <span class="stat-label">✅ Palabras correctas:</span>
+                    <span class="stat-value excellent" id="finalCorrect">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">💡 Pistas usadas:</span>
+                    <span class="stat-value" id="finalHints">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">📊 Precisión:</span>
+                    <span class="stat-value" id="accuracy">100%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">⏱️ Tiempo total:</span>
+                    <span class="stat-value" id="finalTime">0:00</span>
+                </div>
+            </div>
+
+            <div class="final-score-big">
+                <div class="label">🏆 Puntuación Final</div>
+                <div class="value" id="finalScore">0</div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="resetGame()">🎮 Jugar de Nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base de datos de palabras
+        const WORDS = [
+            { word: 'SOFA', emoji: '🛋️', hint: 'Mueble cómodo para sentarse' },
+            { word: 'SILLA', emoji: '🪑', hint: 'Tiene cuatro patas y un respaldo' },
+            { word: 'CAMA', emoji: '🛏️', hint: 'Donde dormimos cada noche' },
+            { word: 'PUERTA', emoji: '🚪', hint: 'Se abre y se cierra para entrar' },
+            { word: 'VENTANA', emoji: '🪟', hint: 'Deja entrar luz del sol' },
+            { word: 'LAMPARA', emoji: '💡', hint: 'Da luz cuando está oscuro' },
+            { word: 'ESPEJO', emoji: '🪞', hint: 'Muestra tu reflejo' },
+            { word: 'MESA', emoji: '🍽️', hint: 'Comemos sobre ella' },
+            { word: 'RELOJ', emoji: '🕰️', hint: 'Nos dice la hora' },
+            { word: 'TELEVISION', emoji: '📺', hint: 'Vemos programas en ella' },
+            { word: 'ESCOBA', emoji: '🧹', hint: 'Para barrer el piso' },
+            { word: 'PLANTA', emoji: '🪴', hint: 'Verde y necesita agua' },
+            { word: 'CUADRO', emoji: '🖼️', hint: 'Obra de arte en la pared' },
+            { word: 'CORTINA', emoji: '🪟', hint: 'Cubre las ventanas' },
+            { word: 'ALFOMBRA', emoji: '🧶', hint: 'Cubre el piso' }
+        ];
+
+        // Variables del juego
+        let currentQuestion = 0;
+        let totalQuestions = 10;
+        let score = 0;
+        let correctAnswers = 0;
+        let hintsUsed = 0;
+        let questions = [];
+        let currentScrambled = '';
+        let hintShown = false;
+        let startTime = Date.now();
+        let timerInterval;
+
+        // Inicializar juego
+        function initGame() {
+            currentQuestion = 0;
+            score = 0;
+            correctAnswers = 0;
+            hintsUsed = 0;
+            startTime = Date.now();
+            
+            // Seleccionar palabras aleatorias
+            questions = shuffleArray([...WORDS]).slice(0, totalQuestions);
+            
+            updateStats();
+            showQuestion();
+            startTimer();
+        }
+
+        // Mostrar pregunta
+        function showQuestion() {
+            if (currentQuestion >= totalQuestions) {
+                showResults();
+                return;
+            }
+
+            const question = questions[currentQuestion];
+            const progress = ((currentQuestion + 1) / totalQuestions) * 100;
+            hintShown = false;
+            
+            // Actualizar UI
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('questionNumber').textContent = 
+                `Palabra ${currentQuestion + 1} de ${totalQuestions}`;
+            document.getElementById('emojiHint').textContent = question.emoji;
+            document.getElementById('hintText').style.display = 'none';
+            document.getElementById('hintUsedMsg').textContent = '';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+            document.getElementById('answerInput').value = '';
+            document.getElementById('answerInput').className = 'answer-input';
+            document.getElementById('answerInput').focus();
+            document.getElementById('hintBtn').disabled = false;
+            
+            // Crear letras desordenadas
+            currentScrambled = scrambleWord(question.word);
+            displayScrambledLetters(currentScrambled);
+        }
+
+        // Desordenar palabra
+        function scrambleWord(word) {
+            let scrambled;
+            do {
+                scrambled = shuffleArray(word.split('')).join('');
+            } while (scrambled === word && word.length > 1);
+            return scrambled;
+        }
+
+        // Mostrar letras desordenadas
+        function displayScrambledLetters(scrambled) {
+            const container = document.getElementById('letterTiles');
+            container.innerHTML = '';
+            
+            scrambled.split('').forEach(letter => {
+                const tile = document.createElement('div');
+                tile.className = 'letter-tile';
+                tile.textContent = letter;
+                container.appendChild(tile);
+            });
+        }
+
+        // Revolver letras
+        function shuffleLetters() {
+            currentScrambled = shuffleArray(currentScrambled.split('')).join('');
+            displayScrambledLetters(currentScrambled);
+        }
+
+        // Mostrar pista
+        function showHint() {
+            if (hintShown) return;
+            
+            const question = questions[currentQuestion];
+            document.getElementById('hintText').textContent = question.hint;
+            document.getElementById('hintText').style.display = 'block';
+            document.getElementById('hintUsedMsg').textContent = '💡 Pista mostrada (-10 puntos)';
+            document.getElementById('hintBtn').disabled = true;
+            
+            hintShown = true;
+            hintsUsed++;
+            updateStats();
+        }
+
+        // Verificar respuesta
+        function checkAnswer() {
+            const input = document.getElementById('answerInput');
+            const answer = input.value.toUpperCase().trim();
+            const correct = questions[currentQuestion].word;
+            const feedback = document.getElementById('feedback');
+            
+            if (!answer) {
+                feedback.textContent = '⚠️ Escribe una respuesta';
+                feedback.className = 'feedback wrong';
+                return;
+            }
+            
+            if (answer === correct) {
+                // Respuesta correcta
+                input.className = 'answer-input correct';
+                feedback.textContent = '¡Correcto! 🎉';
+                feedback.className = 'feedback correct';
+                
+                let points = 100;
+                if (hintShown) points -= 10;
+                
+                score += points;
+                correctAnswers++;
+                updateStats();
+                
+                setTimeout(() => {
+                    currentQuestion++;
+                    showQuestion();
+                }, 2000);
+            } else {
+                // Respuesta incorrecta
+                input.className = 'answer-input wrong';
+                feedback.textContent = `❌ Incorrecto. Intenta de nuevo`;
+                feedback.className = 'feedback wrong';
+                
+                setTimeout(() => {
+                    input.className = 'answer-input';
+                    feedback.textContent = '';
+                    input.focus();
+                }, 1500);
+            }
+        }
+
+        // Enter para verificar
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('answerInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    checkAnswer();
+                }
+            });
+        });
+
+        // Actualizar estadísticas
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('correct').textContent = correctAnswers;
+            document.getElementById('hintsUsed').textContent = hintsUsed;
+        }
+
+        // Timer
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        // Mostrar resultados
+        function showResults() {
+            clearInterval(timerInterval);
+            
+            const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
+            const timeText = document.getElementById('timer').textContent;
+            
+            // Mensaje de desempeño
+            let performanceMsg = '';
+            let resultTitle = '';
+            
+            if (accuracy === 100 && hintsUsed === 0) {
+                performanceMsg = '¡PERFECTO SIN PISTAS! ¡Eres increíble! 🌟';
+                resultTitle = '¡MAESTRO DE ANAGRAMAS!';
+            } else if (accuracy === 100) {
+                performanceMsg = '¡Perfecto! ¡Todas correctas! 🎯';
+                resultTitle = '¡EXCELENTE!';
+            } else if (accuracy >= 80) {
+                performanceMsg = '¡Muy bien! Buen trabajo 💪';
+                resultTitle = '¡MUY BIEN!';
+            } else {
+                performanceMsg = 'Sigue practicando, lo harás mejor 🚀';
+                resultTitle = '¡BUEN INTENTO!';
+            }
+            
+            document.getElementById('resultTitle').textContent = resultTitle;
+            document.getElementById('performanceMsg').textContent = performanceMsg;
+            document.getElementById('finalCorrect').textContent = correctAnswers;
+            document.getElementById('finalHints').textContent = hintsUsed;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('finalTime').textContent = timeText;
+            document.getElementById('finalScore').textContent = score;
+            
+            document.getElementById('resultsModal').classList.add('show');
+        }
+
+        // Reiniciar juego
+        function resetGame() {
+            document.getElementById('resultsModal').classList.remove('show');
+            initGame();
+        }
+
+        // Mezclar array
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Iniciar juego
+        initGame();
+    </script>
+</body>
+</html>

@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - Objetos de la Casa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
+            text-align: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .header h1 {
+            color: #FF6B6B;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            background: linear-gradient(135deg, #FFE66D, #FFD93D);
+            color: #2C3E50;
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            min-height: 600px;
+        }
+
+        .progress-bar-container {
+            background: #e0e0e0;
+            height: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #4ECDC4, #51CF66);
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .question-number {
+            text-align: center;
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .quiz-question {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #2C3E50;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .emoji-display {
+            font-size: 8rem;
+            text-align: center;
+            margin: 2rem 0;
+            animation: bounceIn 0.6s;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .quiz-option {
+            padding: 1.5rem;
+            background: white;
+            border: 4px solid #4ECDC4;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #2C3E50;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+        }
+
+        .quiz-option:hover:not(:disabled) {
+            background: #4ECDC4;
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(78, 205, 196, 0.3);
+        }
+
+        .quiz-option:active:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .quiz-option.correct {
+            background: #51CF66;
+            color: white;
+            border-color: #51CF66;
+            animation: correctPulse 0.6s;
+        }
+
+        .quiz-option.wrong {
+            background: #FF6B6B;
+            color: white;
+            border-color: #FF6B6B;
+            animation: shake 0.5s;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            min-height: 40px;
+        }
+
+        .feedback.correct {
+            color: #51CF66;
+        }
+
+        .feedback.wrong {
+            color: #FF6B6B;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #FF6B6B;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ff5252;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-secondary {
+            background: #4ECDC4;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #45b8af;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 550px;
+            width: 90%;
+            animation: modalSlide 0.4s;
+        }
+
+        @keyframes modalSlide {
+            from {
+                transform: scale(0.7) translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            font-size: 2.5rem;
+            color: #51CF66;
+            margin-bottom: 1rem;
+        }
+
+        .trophy {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: rotateTrophy 2s infinite;
+        }
+
+        @keyframes rotateTrophy {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        .final-stats {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 1.1rem;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            color: #2C3E50;
+            font-weight: 700;
+        }
+
+        .stat-value.good {
+            color: #51CF66;
+        }
+
+        .stat-value.excellent {
+            color: #FFD93D;
+        }
+
+        .final-score-big {
+            background: linear-gradient(135deg, #FFE66D, #FF6B6B);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-top: 1.5rem;
+        }
+
+        .final-score-big .label {
+            color: white;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .final-score-big .value {
+            color: white;
+            font-size: 4rem;
+            font-weight: 700;
+        }
+
+        .performance-message {
+            font-size: 1.3rem;
+            color: #666;
+            margin: 1rem 0;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .emoji-display {
+                font-size: 6rem;
+            }
+
+            .quiz-question {
+                font-size: 1.4rem;
+            }
+
+            .quiz-options {
+                grid-template-columns: 1fr;
+            }
+
+            .game-container {
+                padding: 1.5rem;
+            }
+
+            .score-board {
+                gap: 0.5rem;
+            }
+
+            .score-item {
+                padding: 0.75rem 1rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .emoji-display {
+                font-size: 5rem;
+            }
+
+            .quiz-question {
+                font-size: 1.2rem;
+            }
+
+            .quiz-option {
+                padding: 1.25rem;
+                font-size: 1rem;
+            }
+
+            .btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            .modal-content {
+                padding: 2rem 1rem;
+            }
+        }
+        .btn-home {
+    position: absolute;
+    top: 1.5rem;
+    left: 2rem;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    transition: all 0.3s;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.btn-home:hover {
+    background: #667eea;
+    color: white;
+    transform: translateX(-5px);
+}
+
+/* Ajuste para el header */
+.header {
+    position: relative;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .btn-home {
+        position: static;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="btn-home">← Volver a Inicio</a>
+        <h1>❓ Quiz - Objetos de la Casa</h1>
+        <p>¡Adivina qué objeto es!</p>
+        <div class="score-board">
+            <div class="score-item">
+                🏆 Puntos: <span id="score">0</span>
+            </div>
+            <div class="score-item">
+                ✅ Correctas: <span id="correct">0</span>
+            </div>
+            <div class="score-item">
+                ❌ Incorrectas: <span id="wrong">0</span>
+            </div>
+            <div class="score-item">
+                ⏱️ Tiempo: <span id="timer">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="question-number" id="questionNumber">Pregunta 1 de 10</div>
+
+        <div class="quiz-question">¿Qué objeto es este?</div>
+
+        <div class="emoji-display" id="emojiDisplay">🤔</div>
+
+        <div class="quiz-options" id="optionsContainer"></div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="controls">
+            <button class="btn btn-secondary" id="nextBtn" onclick="nextQuestion()" style="display: none;">
+                Siguiente →
+            </button>
+        </div>
+    </div>
+
+    <div class="modal" id="resultsModal">
+        <div class="modal-content">
+            <div class="trophy">🏆</div>
+            <h2 id="resultTitle">¡Completado!</h2>
+            <p class="performance-message" id="performanceMsg"></p>
+            
+            <div class="final-stats">
+                <div class="stat-row">
+                    <span class="stat-label">✅ Respuestas correctas:</span>
+                    <span class="stat-value good" id="finalCorrect">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">❌ Respuestas incorrectas:</span>
+                    <span class="stat-value" id="finalWrong">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">📊 Precisión:</span>
+                    <span class="stat-value excellent" id="accuracy">0%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">⏱️ Tiempo total:</span>
+                    <span class="stat-value" id="finalTime">0:00</span>
+                </div>
+            </div>
+
+            <div class="final-score-big">
+                <div class="label">🏆 Puntuación Final</div>
+                <div class="value" id="finalScore">0</div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="resetGame()">🎮 Jugar de Nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base de datos de objetos de la casa
+        const HOUSE_OBJECTS = [
+            { emoji: '🛋️', name: 'SOFA', alternatives: ['SILLON', 'MUEBLE'] },
+            { emoji: '🪑', name: 'SILLA', alternatives: ['ASIENTO'] },
+            { emoji: '🛏️', name: 'CAMA', alternatives: ['LECHO'] },
+            { emoji: '🚪', name: 'PUERTA', alternatives: ['ENTRADA'] },
+            { emoji: '🪟', name: 'VENTANA', alternatives: ['CRISTAL'] },
+            { emoji: '💡', name: 'LAMPARA', alternatives: ['LUZ', 'FOCO'] },
+            { emoji: '🚿', name: 'DUCHA', alternatives: ['REGADERA', 'BAÑO'] },
+            { emoji: '🚽', name: 'INODORO', alternatives: ['BAÑO', 'WC'] },
+            { emoji: '📺', name: 'TELEVISION', alternatives: ['TV', 'TELE'] },
+            { emoji: '🖼️', name: 'CUADRO', alternatives: ['PINTURA', 'MARCO'] },
+            { emoji: '🕰️', name: 'RELOJ', alternatives: ['HORA'] },
+            { emoji: '🪴', name: 'PLANTA', alternatives: ['MACETA', 'FLORERO'] },
+            { emoji: '🧹', name: 'ESCOBA', alternatives: ['TRAPEADOR'] },
+            { emoji: '🗑️', name: 'BASURERO', alternatives: ['PAPELERA', 'TACHO'] },
+            { emoji: '☕', name: 'TAZA', alternatives: ['VASO', 'COPA'] },
+            { emoji: '🍽️', name: 'PLATO', alternatives: ['VAJILLA'] },
+            { emoji: '🔑', name: 'LLAVE', alternatives: ['CERRADURA'] },
+            { emoji: '🧊', name: 'REFRIGERADOR', alternatives: ['NEVERA', 'HELADERA'] },
+            { emoji: '🪞', name: 'ESPEJO', alternatives: ['CRISTAL'] },
+            { emoji: '🛁', name: 'BAÑERA', alternatives: ['TINA', 'BAÑO'] }
+        ];
+
+        // Variables del juego
+        let currentQuestion = 0;
+        let totalQuestions = 10;
+        let score = 0;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+        let questions = [];
+        let startTime = Date.now();
+        let timerInterval;
+
+        // Inicializar juego
+        function initGame() {
+            currentQuestion = 0;
+            score = 0;
+            correctAnswers = 0;
+            wrongAnswers = 0;
+            startTime = Date.now();
+            
+            // Seleccionar preguntas aleatorias
+            questions = shuffleArray([...HOUSE_OBJECTS]).slice(0, totalQuestions);
+            
+            updateStats();
+            showQuestion();
+            startTimer();
+        }
+
+        // Mostrar pregunta
+        function showQuestion() {
+            if (currentQuestion >= totalQuestions) {
+                showResults();
+                return;
+            }
+
+            const question = questions[currentQuestion];
+            const progress = ((currentQuestion + 1) / totalQuestions) * 100;
+            
+            // Actualizar UI
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('questionNumber').textContent = 
+                `Pregunta ${currentQuestion + 1} de ${totalQuestions}`;
+            document.getElementById('emojiDisplay').textContent = question.emoji;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            // Crear opciones
+            createOptions(question);
+        }
+
+        // Crear opciones de respuesta
+        function createOptions(question) {
+            const options = [question.name];
+            
+            // Agregar 3 opciones incorrectas
+            while (options.length < 4) {
+                const randomObj = HOUSE_OBJECTS[Math.floor(Math.random() * HOUSE_OBJECTS.length)];
+                if (!options.includes(randomObj.name) && randomObj.name !== question.name) {
+                    options.push(randomObj.name);
+                }
+            }
+            
+            shuffleArray(options);
+            
+            // Renderizar opciones
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'quiz-option';
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option, question.name, button);
+                container.appendChild(button);
+            });
+        }
+
+        // Verificar respuesta
+        function checkAnswer(selected, correct, button) {
+            // Deshabilitar todas las opciones
+            const allOptions = document.querySelectorAll('.quiz-option');
+            allOptions.forEach(opt => opt.disabled = true);
+            
+            const feedback = document.getElementById('feedback');
+            
+            if (selected === correct) {
+                // Respuesta correcta
+                button.classList.add('correct');
+                feedback.textContent = '¡Correcto! 🎉';
+                feedback.className = 'feedback correct';
+                correctAnswers++;
+                score += 100;
+                
+                // Bonus por velocidad (si responde en menos de 5 segundos)
+                const questionTime = Date.now() - startTime;
+                if (questionTime < 5000) {
+                    score += 50;
+                    feedback.textContent = '¡Correcto! ⚡ +50 bonus de velocidad';
+                }
+            } else {
+                // Respuesta incorrecta
+                button.classList.add('wrong');
+                feedback.textContent = `Incorrecto. Era: ${correct} 😞`;
+                feedback.className = 'feedback wrong';
+                wrongAnswers++;
+                
+                // Mostrar la respuesta correcta
+                allOptions.forEach(opt => {
+                    if (opt.textContent === correct) {
+                        opt.classList.add('correct');
+                    }
+                });
+            }
+            
+            updateStats();
+            
+            // Mostrar botón siguiente
+            setTimeout(() => {
+                document.getElementById('nextBtn').style.display = 'inline-block';
+            }, 1000);
+        }
+
+        // Siguiente pregunta
+        function nextQuestion() {
+            currentQuestion++;
+            startTime = Date.now(); // Reiniciar tiempo para bonus
+            showQuestion();
+        }
+
+        // Actualizar estadísticas
+        function updateStats() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('correct').textContent = correctAnswers;
+            document.getElementById('wrong').textContent = wrongAnswers;
+        }
+
+        // Timer
+        function startTimer() {
+            clearInterval(timerInterval);
+            const gameStart = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - gameStart) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        // Mostrar resultados finales
+        function showResults() {
+            clearInterval(timerInterval);
+            
+            const accuracy = Math.round((correctAnswers / totalQuestions) * 100);
+            const timeText = document.getElementById('timer').textContent;
+            
+            // Mensaje de desempeño
+            let performanceMsg = '';
+            let resultTitle = '';
+            
+            if (accuracy === 100) {
+                performanceMsg = '¡PERFECTO! ¡Eres un genio! 🌟';
+                resultTitle = '¡IMPRESIONANTE!';
+            } else if (accuracy >= 80) {
+                performanceMsg = '¡Excelente trabajo! 🎯';
+                resultTitle = '¡MUY BIEN!';
+            } else if (accuracy >= 60) {
+                performanceMsg = '¡Buen intento! Sigue practicando 💪';
+                resultTitle = '¡BIEN HECHO!';
+            } else {
+                performanceMsg = 'Puedes mejorar. ¡No te rindas! 🚀';
+                resultTitle = '¡COMPLETADO!';
+            }
+            
+            // Actualizar modal
+            document.getElementById('resultTitle').textContent = resultTitle;
+            document.getElementById('performanceMsg').textContent = performanceMsg;
+            document.getElementById('finalCorrect').textContent = correctAnswers;
+            document.getElementById('finalWrong').textContent = wrongAnswers;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('finalTime').textContent = timeText;
+            document.getElementById('finalScore').textContent = score;
+            
+            // Mostrar modal
+            document.getElementById('resultsModal').classList.add('show');
+        }
+
+        // Reiniciar juego
+        function resetGame() {
+            document.getElementById('resultsModal').classList.remove('show');
+            initGame();
+        }
+
+        // Mezclar array
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Iniciar juego al cargar
+        initGame();
+    </script>
+</body>
+</html>
